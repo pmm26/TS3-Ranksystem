@@ -134,15 +134,7 @@ try {
 										<form name="verify" method="POST">
 											<?PHP
 											if(isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) {
-												$ts3link = '<a href="ts3server://';
-												if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
-													$ts3link .= preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-												} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
-													$ts3link .= $_SERVER['HTTP_HOST'];
-												} else {
-													$ts3link .= $cfg['teamspeak_host_address'];
-												}
-												$ts3link .= ':'.$cfg['teamspeak_voice_port'].'?cid='.$cfg['teamspeak_verification_channel_id'].'">';
+												$ts3link = '<a href="ts3server://'.$public_address_html.'?cid='.(int)$cfg['teamspeak_verification_channel_id'].'">';
 												echo '<p>1. ',sprintf($lang['verify0002'], $ts3link, '</a>'),'</p>';
 											}
 											?>

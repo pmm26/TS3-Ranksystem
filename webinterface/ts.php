@@ -25,7 +25,47 @@ try {
 		$err_lvl = 3;
 	}
 
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+	if ((isset($_POST['update']) || isset($_POST['save_public_address'])) &&
+		(!is_string($_POST['csrf_token'] ?? null) || !isset($db_csrf[$_POST['csrf_token']]))) {
+		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+		rem_session_ts3();
+		exit;
+	}
+
+	// Custom language packs from earlier releases may lack the public address labels.
+	if (!isset($lang['wits3public'], $lang['wits3publichelp'])) {
+		$selected_language = $lang;
+		require $GLOBALS['langpath'].'/core_en_english_gb.php';
+		$lang = $selected_language + $lang;
+	}
+
+	$public_address = $cfg['teamspeak_public_address'] ?? '';
+	if (isset($_POST['save_public_address'])) {
+		$value = $_POST['teamspeak_public_address'] ?? null;
+		$public_address = is_string($value) ? trim($value) : '';
+		if (!is_string($value) || ($public_address !== '' && parse_public_ts_address($public_address, $cfg['teamspeak_voice_port'] ?? 9987) === null)) {
+			$err_msg = $lang['wits3publichelp'];
+			$err_lvl = 3;
+		} else {
+			try {
+				$consume = $mysqlcon->prepare("DELETE FROM `$dbname`.`csrf_token` WHERE `token`=? AND `sessionid`=?");
+				$consume->execute(array($_POST['csrf_token'], session_id()));
+				if ($consume->rowCount() === 1) {
+					$save = $mysqlcon->prepare("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('teamspeak_public_address', ?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)");
+					$save->execute(array($public_address));
+					$err_msg = $lang['wisvsuc'];
+					$err_lvl = NULL;
+				} else {
+					$err_msg = $lang['errcsrf'];
+					$err_lvl = 3;
+				}
+			} catch (PDOException $ex) {
+				error_log('Saving the public TeamSpeak address failed: '.$ex->getMessage());
+				$err_msg = $lang['isntwidbmsg'].htmlspecialchars((string)$ex->getCode(), ENT_QUOTES);
+				$err_lvl = 3;
+			}
+		}
+	} elseif (isset($_POST['update'])) {
 		$cfg['webinterface_admin_client_unique_id_list'] = '';
 		if(is_array($_POST['channelid'])) $_POST['channelid'] = $_POST['channelid'][0];
 		
@@ -66,10 +106,6 @@ try {
 			$cfg['webinterface_admin_client_unique_id_list'] = array_flip($_POST['webinterface_admin_client_unique_id_list']);
 		}
 
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
 	}
 	?>
 			<div id="page-wrapper" class="webinterface_ts">
@@ -82,6 +118,17 @@ try {
 							</h1>
 						</div>
 					</div>
+					<form method="POST" class="panel panel-default">
+						<div class="panel-body">
+							<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+							<div class="form-group">
+								<label for="public-address"><?PHP echo $lang['wits3public']; ?></label>
+								<input id="public-address" name="teamspeak_public_address" class="form-control" type="text" aria-describedby="public-address-help" placeholder="voice.example.org:9987" value="<?PHP echo htmlspecialchars($public_address, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+								<p id="public-address-help" class="help-block"><?PHP echo $lang['wits3publichelp']; ?></p>
+							</div>
+							<button type="submit" class="btn btn-primary" name="save_public_address"><?PHP echo $lang['wisvconf']; ?></button>
+						</div>
+					</form>
 					<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
 						<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 						<div class="row">

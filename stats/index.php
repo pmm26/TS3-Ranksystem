@@ -365,24 +365,7 @@ try {
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0037']; ?></td>
-											<td><a href="ts3server://<?PHP
-											if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
-												echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-											} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
-												echo $_SERVER['HTTP_HOST'];
-											} else {
-												echo $cfg['teamspeak_host_address'];
-											}
-											echo ':'.$cfg['teamspeak_voice_port']; ?>">
-											<?PHP
-											if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
-												echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-											} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
-												echo $_SERVER['HTTP_HOST'];
-											} else {
-												echo $cfg['teamspeak_host_address'];
-											}
-											echo ':'.$cfg['teamspeak_voice_port']; ?></a></td>
+											<td><a href="ts3server://<?PHP echo $public_address_html; ?>"><?PHP echo $public_address_html; ?></a></td>
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0038']; ?></td>

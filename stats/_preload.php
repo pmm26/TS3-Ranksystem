@@ -2,6 +2,8 @@
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'other/_functions.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'other/config.php');
 
+$public_address_html = htmlspecialchars(public_ts_address($cfg), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
 start_session($cfg);
 $lang = set_language(get_language());
 
