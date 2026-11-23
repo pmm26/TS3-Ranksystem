@@ -1,23 +1,36 @@
 # syntax=docker/dockerfile:1.19
-FROM cgr.dev/chainguard/wolfi-base@sha256:be019c1c74fe69204a42c4e10bc4d886a49bf5403ffa74374ef7baa408fc9a26
+FROM php:8.6-apache AS base
 
-# Keep the UID and GID used by existing tsicons volumes.
-RUN addgroup -g 33 www-data && adduser -S -D -H -u 33 -G www-data www-data && \
-    apk --no-cache upgrade && \
-    apk add --no-cache apache2 ca-certificates-bundle procps tini tzdata \
-        php-8.6 php-8.6-apache php-8.6-ctype php-8.6-curl php-8.6-dom \
-        php-8.6-fileinfo php-8.6-iconv php-8.6-mbstring php-8.6-mysqlnd \
-        php-8.6-openssl php-8.6-pdo php-8.6-pdo_mysql \
-        php-8.6-pdo_sqlite php-8.6-phar php-8.6-posix php-8.6-simplexml \
-        php-8.6-sodium php-8.6-ssh2 php-8.6-xml php-8.6-xmlreader \
-        php-8.6-xmlwriter php-8.6-zip && \
-    apk add --no-cache --virtual .setcap libcap-utils && \
-    setcap cap_net_bind_service=+ep /usr/bin/httpd && apk del .setcap && \
-    mkdir -p /var/www/html /var/www/tsicons /run/apache2 && \
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
+FROM base AS extensions
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends libonig-dev libssh2-1-dev libzip-dev; \
+    docker-php-ext-install -j4 mbstring pdo_mysql zip; \
+    curl -fsSL https://pecl.php.net/get/ssh2-1.6.1.tgz -o /tmp/ssh2.tgz; \
+    echo '2212d8266df54654b282ca681ee9b82f312a776e801b667b288d80f3541741ed  /tmp/ssh2.tgz' | sha256sum -c -; \
+    tar -xzf /tmp/ssh2.tgz -C /tmp; \
+    cd /tmp/ssh2-1.6.1; phpize; ./configure --with-ssh2; make -j4; make install; \
+    docker-php-ext-enable ssh2
+
+FROM base
+COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends libcap2-bin libonig5 libssh2-1t64 libzip5 procps tini; \
+    setcap cap_net_bind_service=+ep /usr/sbin/apache2; \
+    apt-mark auto $PHPIZE_DEPS libc6-dev libcap2-bin; \
+    apt-get autoremove -y --purge; \
+    rm -rf /var/lib/apt/lists/* /usr/src/php.tar.*; \
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
+    a2enmod remoteip; \
+    mkdir -p /var/www/html /var/www/tsicons && \
     mkdir -p /var/www/ranksystem/avatars /var/www/ranksystem/logs /var/www/ranksystem/update && \
-    chown www-data:www-data /var/www/html /var/www/tsicons /run/apache2
+    chown www-data:www-data /var/www/html /var/www/tsicons
 
-COPY docker/httpd.conf /etc/apache2/httpd.conf
+COPY docker/httpd.conf /etc/apache2/sites-available/000-default.conf
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY LICENSE /usr/share/licenses/ts3-ranksystem/LICENSE
 COPY index.php install.php worker.php /var/www/ranksystem/
