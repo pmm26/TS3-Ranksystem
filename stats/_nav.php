@@ -386,16 +386,7 @@ if(!isset($_GET["user"])) {
 								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fas fa-wrench fa-fw"></i><span class="item-margin">',$lang['wi'],'</span></a></li>';
 							}
 						} elseif (isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) {
-							echo '<li><a href="ts3server://';
-								if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
-									echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-								} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
-									echo $_SERVER['HTTP_HOST'];
-								} else {
-									echo $cfg['teamspeak_host_address'];
-								}
-								echo ':'.$cfg['teamspeak_voice_port'];
-							echo '"><i class="fas fa-headset fa-fw"></i><span class="item-margin">'.$lang['stnv0043'].'</span></a></li>';
+							echo '<li><a href="ts3server://'.$public_address_html.'"><i class="fas fa-headset fa-fw"></i><span class="item-margin">'.$lang['stnv0043'].'</span></a></li>';
 						}
 						?>
 						<li>
