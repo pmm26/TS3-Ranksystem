@@ -1,5 +1,5 @@
 # TS3 Ranksystem
-![compat](https://jvmerkle.de/badges/latest-tsn-rs-compat.svg) ![pulls](https://img.shields.io/docker/pulls/jvmerkle/ts3-ranksystem.svg)
+![compat](https://jvmerkle.de/badges/latest-tsn-rs-compat.svg)
 
 System that automatically grants ranks in the form of server groups for online time or online activity to users, using the given server groups of the TS3 server.
 
@@ -8,20 +8,26 @@ This is a modified fork of the TSN-Ranksystem which is updated irregularly to a 
 Please make sure that your TSN-Ranksystem (database) version is not above the (database) version of this fork (downgrade) or that the badge "Compatible to latest TSN-Ranksystem" above states "yes".
 
 ## Docker
-You can find the docker images on docker hub as [jvmerkle/ts3-ranksystem](https://hub.docker.com/r/jvmerkle/ts3-ranksystem).
+Compose builds this fork locally with Apache and PHP 8.4 from Wolfi. To pick up package security updates, run `docker compose build --pull --no-cache ranksystem` and then `docker compose up -d ranksystem`.
 Please note that the container **MUST BE accessed via a trusted proxy server only** (e.g. nginx).
 Make sure to set `BASE_HREF` to the absolute URL path of the rank system (e.g. `https://foobar.com/frank/ranksystem` => `BASE_HREF=/frank/ranksystem/`) in the `docker-compose.yml`
+
+The default TeamSpeak icons in this fork are the same files shipped in the [publisher’s v1.4.1 image](https://hub.docker.com/layers/jvmerkle/ts3-ranksystem/v1.4.1/images/sha256-693d137216b9973d8f12ab3d26d1a2ed5d081aa731b99c1904dd5e61bea90689).
+
+### Container security updates
+
+The runtime uses Wolfi's signed packages and runs Apache and the PHP worker as UID/GID 33. The OpenSSL packages used for this build predate the vendor fix for CVE-2026-124709. The Docker build applies the upstream fix to the matching Wolfi sources for both installed versions of libssl. It verifies the exported symbols and records each backport as a local APK. The compiler and debug sources stay in the build stages. See the [OpenSSL advisory](https://openssl-library.org/news/secadv/20261117.txt) and the [upstream fix](https://github.com/openssl/openssl/commit/22291a6af12f158fbb13bfbd572a33dbdbf290d2).
 
 ### First time setup
 Enable the `INSTALL_MODE=1` in the file `docker-compose.yml` by uncommenting the line. Then start the rank system with:
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 Navigate to the `install.php` with your browser and set up the rank system.
 After performing the first time setup re-edit the `docker-compose.yml` by commenting or removing the `INSTALL_MODE`.
 Then start the docker containers in daemon mode:
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Existing installation

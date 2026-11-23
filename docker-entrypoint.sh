@@ -18,8 +18,8 @@ fi
 
 export DOCKER_ENV=1
 
-# Remove the old instance (if existing)
-rm -rf "/var/www/html/"
+# Keep the writable document root and remove the previous instance.
+find /var/www/html -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 
 # Setup base href
 BASE_HREF="${BASE_HREF}/"
@@ -66,4 +66,4 @@ else
          "${RS_ROOT}worker.php"
 fi
 
-apache2-foreground
+exec /usr/bin/httpd -D FOREGROUND

@@ -7,7 +7,7 @@ volumes:
 services:
   ranksystem:
     hostname: ranksystem
-    image: jvmerkle/ts3-ranksystem
+    build: .
     restart: always
     stop_signal: SIGTERM
     depends_on:
