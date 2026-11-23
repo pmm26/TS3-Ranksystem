@@ -30,7 +30,7 @@ mkdir -p "$RS_ROOT"
 cp -r "/var/www/ranksystem/." "$RS_ROOT"
 
 # Seed missing default icons on the persistent volume.
-cp -n "${RS_ROOT}tsicons/"*.png /var/www/tsicons/
+cp --update=none "${RS_ROOT}tsicons/"*.png /var/www/tsicons/
 
 # Delete the repository tsicons
 rm -rf "${RS_ROOT}tsicons"
@@ -66,4 +66,4 @@ else
          "${RS_ROOT}worker.php"
 fi
 
-exec /usr/bin/httpd -D FOREGROUND
+exec apache2-foreground
