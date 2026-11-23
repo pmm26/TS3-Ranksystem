@@ -398,7 +398,7 @@ try {
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0043']; ?></td>
-											<td><?PHP echo substr($sql_res['server_version'], 0, strpos($sql_res['server_version'], ' ')); ?></td>
+											<td><?PHP echo htmlspecialchars(explode(' ', $sql_res['server_version'] ?? '', 2)[0], ENT_QUOTES); ?></td>
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0044']; ?></td>

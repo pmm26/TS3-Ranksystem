@@ -1,40 +1,29 @@
-FROM php:8.4.27-apache
+# syntax=docker/dockerfile:1.19
+FROM cgr.dev/chainguard/wolfi-base@sha256:be019c1c74fe69204a42c4e10bc4d886a49bf5403ffa74374ef7baa408fc9a26
 
-RUN apt-get update && \
-    apt-get install -y libcap2-bin tini libzip-dev libssh2-1-dev && \
-    pecl install zip ssh2 && \
-    docker-php-ext-configure pdo_mysql && \
-    docker-php-ext-install pdo_mysql && \
-    docker-php-ext-enable zip ssh2 && \
-    rm -rf /var/lib/apt/lists/*
+# Keep the UID and GID used by existing tsicons volumes.
+RUN addgroup -g 33 www-data && adduser -S -D -H -u 33 -G www-data www-data && \
+    apk --no-cache upgrade && \
+    apk add --no-cache apache2 ca-certificates-bundle procps tini tzdata \
+        php-8.6 php-8.6-apache php-8.6-ctype php-8.6-curl php-8.6-dom \
+        php-8.6-fileinfo php-8.6-iconv php-8.6-mbstring php-8.6-mysqlnd \
+        php-8.6-openssl php-8.6-pdo php-8.6-pdo_mysql \
+        php-8.6-pdo_sqlite php-8.6-phar php-8.6-posix php-8.6-simplexml \
+        php-8.6-sodium php-8.6-ssh2 php-8.6-xml php-8.6-xmlreader \
+        php-8.6-xmlwriter php-8.6-zip && \
+    apk add --no-cache --virtual .setcap libcap-utils && \
+    setcap cap_net_bind_service=+ep /usr/bin/httpd && apk del .setcap && \
+    mkdir -p /var/www/html /var/www/tsicons /run/apache2 && \
+    chown www-data:www-data /var/www/html /var/www/tsicons /run/apache2
 
-# Allow apache to bind to port 80 with any user
-# Use the PHP production settings.
-# Accept X-Forwarded-For as real client ip from a TRUSTED PROXY.
-# Set the "Server" header to production (e.g. to "Apache") and
-# remove apache version information. Build the ETAG from
-# last modified and size only.
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2 && \
-    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
-    a2enmod remoteip && \
-    ( \
-        echo "RemoteIPHeader X-Forwarded-For" && \
-        echo "ServerTokens Prod" && \
-        echo "ServerSignature Off" && \
-        echo "TraceEnable off" && \
-        echo "FileETag MTime Size" && \
-        echo "ErrorLog /dev/null" && \
-        echo "CustomLog /dev/null combined" \
-    ) >>/etc/apache2/apache2.conf
-
-COPY . /var/www/ranksystem/
-
-RUN mv /var/www/ranksystem/docker-entrypoint.sh /docker-entrypoint.sh && \
-    mkdir /var/www/tsicons && \
-    chown www-data:www-data -R /var/www
+COPY docker/httpd.conf /etc/apache2/httpd.conf
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY --exclude=docker --exclude=docker-entrypoint.sh \
+    --exclude=.git --exclude=.github --exclude=**/.github --exclude=.gitattributes --exclude=.dockerignore \
+    --exclude=Dockerfile --exclude=docker-compose.yml --exclude=README.md . /var/www/ranksystem/
 
 USER www-data
+EXPOSE 80
 WORKDIR /
 ENTRYPOINT ["/usr/bin/tini", "--"]
-
 CMD ["/bin/sh", "/docker-entrypoint.sh"]

@@ -18,8 +18,8 @@ fi
 
 export DOCKER_ENV=1
 
-# Remove the old instance (if existing)
-rm -rf "/var/www/html/"
+# Keep the writable document root and remove the previous instance.
+find /var/www/html -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 
 # Setup base href
 BASE_HREF="${BASE_HREF}/"
@@ -29,8 +29,8 @@ RS_ROOT="/var/www/html/${BASE_HREF}"
 mkdir -p "$RS_ROOT"
 cp -r "/var/www/ranksystem/." "$RS_ROOT"
 
-# Copy repository tsicons to the volume
-cp -r "${RS_ROOT}tsicons/." /var/www/tsicons/
+# Seed missing default icons on the persistent volume.
+cp -n "${RS_ROOT}tsicons/"*.png /var/www/tsicons/
 
 # Delete the repository tsicons
 rm -rf "${RS_ROOT}tsicons"
@@ -66,4 +66,4 @@ else
          "${RS_ROOT}worker.php"
 fi
 
-apache2-foreground
+exec /usr/bin/httpd -D FOREGROUND

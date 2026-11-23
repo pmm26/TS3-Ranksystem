@@ -40,7 +40,7 @@ class TeamSpeak3_Adapter_FileTransfer extends TeamSpeak3_Adapter_Abstract
     $this->initTransport($this->options);
     $this->transport->setAdapter($this);
 
-    TeamSpeak3_Helper_Profiler::init(spl_object_hash($this));
+    TeamSpeak3_Helper_Profiler::init(spl_object_id($this));
 
     TeamSpeak3_Helper_Signal::getInstance()->emit("filetransferConnected", $this);
   }
