@@ -8,7 +8,7 @@ This is a modified fork of the TSN-Ranksystem which is updated irregularly to a 
 Please make sure that your TSN-Ranksystem (database) version is not above the (database) version of this fork (downgrade) or that the badge "Compatible to latest TSN-Ranksystem" above states "yes".
 
 ## Docker
-Compose builds this fork locally with Apache and PHP 8.4 from Wolfi. To pick up package security updates, run `docker compose build --pull --no-cache ranksystem` and then `docker compose up -d ranksystem`.
+Compose builds this fork locally with Apache and PHP 8.6 from Wolfi. To pick up package security updates, run `docker compose build --pull --no-cache ranksystem` and then `docker compose up -d ranksystem`.
 Please note that the container **MUST BE accessed via a trusted proxy server only** (e.g. nginx).
 Make sure to set `BASE_HREF` to the absolute URL path of the rank system (e.g. `https://foobar.com/frank/ranksystem` => `BASE_HREF=/frank/ranksystem/`) in the `docker-compose.yml`
 
@@ -16,7 +16,7 @@ The default TeamSpeak icons in this fork are the same files shipped in the [publ
 
 ### Container security updates
 
-The runtime uses Wolfi's signed packages and runs Apache and the PHP worker as UID/GID 33. The OpenSSL packages used for this build predate the vendor fix for CVE-2026-124709. The Docker build applies the upstream fix to the matching Wolfi sources for both installed versions of libssl. It verifies the exported symbols and records each backport as a local APK. The compiler and debug sources stay in the build stages. See the [OpenSSL advisory](https://openssl-library.org/news/secadv/20261117.txt) and the [upstream fix](https://github.com/openssl/openssl/commit/22291a6af12f158fbb13bfbd572a33dbdbf290d2).
+Apache and the PHP worker run as UID/GID 33 and use Wolfi’s signed OpenSSL packages. Apache serves HTTP on port 80 behind the trusted reverse proxy. The OpenSSL QUIC server issue in CVE-2026-124709 requires a QUIC listener. If your proxy serves HTTP/3, check its TLS implementation for this advisory. [OpenSSL advisory](https://openssl-library.org/news/secadv/20261117.txt)
 
 ### First time setup
 Enable the `INSTALL_MODE=1` in the file `docker-compose.yml` by uncommenting the line. Then start the rank system with:

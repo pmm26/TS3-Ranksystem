@@ -1,4 +1,1 @@
 docker-entrypoint.sh text eol=lf
-
-# Unified diffs preserve whitespace from their upstream source.
-docker/*.patch -whitespace

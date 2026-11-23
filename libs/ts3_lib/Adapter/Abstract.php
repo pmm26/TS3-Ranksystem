@@ -101,7 +101,7 @@ abstract class TeamSpeak3_Adapter_Abstract
    */
   public function getProfiler()
   {
-    return TeamSpeak3_Helper_Profiler::get(spl_object_hash($this));
+    return TeamSpeak3_Helper_Profiler::get(spl_object_id($this));
   }
 
   /**

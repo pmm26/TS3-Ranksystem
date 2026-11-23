@@ -68,7 +68,7 @@ class TeamSpeak3_Adapter_ServerQuery extends TeamSpeak3_Adapter_Abstract
     $this->initTransport($this->options);
     $this->transport->setAdapter($this);
 
-    TeamSpeak3_Helper_Profiler::init(spl_object_hash($this));
+    TeamSpeak3_Helper_Profiler::init(spl_object_id($this));
 
     $rdy = $this->getTransport()->readLine();
 
