@@ -35,7 +35,9 @@ RUN --mount=type=bind,from=tls3,source=/out,target=/tls3 \
 
 COPY docker/httpd.conf /etc/apache2/httpd.conf
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY --exclude=docker --exclude=docker-entrypoint.sh . /var/www/ranksystem/
+COPY --exclude=docker --exclude=docker-entrypoint.sh \
+    --exclude=.git --exclude=.github --exclude=.gitattributes --exclude=.dockerignore \
+    --exclude=Dockerfile --exclude=docker-compose.yml --exclude=README.md . /var/www/ranksystem/
 
 USER www-data
 EXPOSE 80
