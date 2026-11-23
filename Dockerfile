@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.19
-FROM cgr.dev/chainguard/wolfi-base@sha256:be019c1c74fe69204a42c4e10bc4d886a49bf5403ffa74374ef7baa408fc9a26
+FROM cgr.dev/chainguard/wolfi-base:latest
 
 # Keep the UID and GID used by existing tsicons volumes.
 RUN addgroup -g 33 www-data && adduser -S -D -H -u 33 -G www-data www-data && \
