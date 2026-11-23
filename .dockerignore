@@ -1,6 +1,31 @@
-.git/
+# Send only the inputs used by the image build.
+**
+!LICENSE
+!docker-entrypoint.sh
+!docker/httpd.conf
+!index.php
+!install.php
+!worker.php
+!api/*.php
+!jobs/*.php
+!languages/*.php
+!libs/**/*.css
+!libs/**/*.js
+!libs/**/*.php
+!libs/**/*.plex
+!libs/**/*.svg
+!libs/**/*.tpl
+!libs/**/*.y
+!other/*.php
+!stats/*.php
+!styles/**/*.css
+!styles/*.php
+!tsicons/*.png
+!webinterface/*.php
 
-.gitattributes
-docker-compose.yml
-Dockerfile
-README.md
+# The entrypoint generates the database configuration at startup.
+other/dbconfig.php
+
+# Keep local environment files out even when their extension matches an input.
+**/.env
+**/.env.*
