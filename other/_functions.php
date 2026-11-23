@@ -914,8 +914,8 @@ function set_language($language) {
 	return $lang;
 }
 
-// Return a public voice endpoint, or null when the override is missing or invalid.
-function format_public_ts_address($address, $voice_port) {
+// Parse a hostname or bracketed IP address with an optional port.
+function parse_public_ts_address($address, $default_port) {
 	if (!is_string($address) || !preg_match('/\A(\[[0-9a-fA-F:.]+\]|[A-Za-z0-9.-]+)(?::([0-9]{1,5}))?\z/', $address, $parts)) {
 		return null;
 	}
@@ -928,24 +928,30 @@ function format_public_ts_address($address, $voice_port) {
 	} else {
 		$valid = filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
 	}
-	$port = (int)($parts[2] ?? $voice_port);
-	if ($valid === false || $port < 1 || $port > 65535) {
+	$port = $parts[2] ?? $default_port;
+	if ($valid === false || !ctype_digit((string)$port) || $port < 1 || $port > 65535) {
 		return null;
 	}
-	return $host.':'.$port;
+	return array($host, (int)$port);
 }
 
 function public_ts_address($cfg) {
-	$address = format_public_ts_address($cfg['teamspeak_public_address'] ?? '', $cfg['teamspeak_voice_port']);
-	if ($address !== null) {
-		return $address;
+	$port = $cfg['teamspeak_voice_port'] ?? 9987;
+	$public = parse_public_ts_address($cfg['teamspeak_public_address'] ?? '', $port);
+	if ($public !== null) {
+		return implode(':', $public);
 	}
 
-	$host = $cfg['teamspeak_host_address'];
+	$host = $cfg['teamspeak_host_address'] ?? 'localhost';
 	if ($host === 'localhost' || $host === '127.0.0.1') {
-		$host = preg_replace('/^www\./', '', $_SERVER['HTTP_HOST']);
+		$web = parse_public_ts_address($_SERVER['HTTP_HOST'] ?? '', 80);
+		if ($web !== null) {
+			$host = preg_replace('/^www\./i', '', $web[0]);
+		}
+	} elseif (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+		$host = '['.$host.']';
 	}
-	return $host.':'.$cfg['teamspeak_voice_port'];
+	return $host.':'.$port;
 }
 
 function set_session_ts3($mysqlcon,$cfg,$lang,$dbname) {
